@@ -81,6 +81,11 @@ class CardPayment implements Payment {
     // 인터페이스의 접근 제어자는 public 아니면 privated 밖에 존재하지 않는다.
     // 아무것도 붙이지 않는 경우에는 기본적으로 public으로 취급된다.
     // 따라서 구현 클래스에서는 접근 수준이 같거나 더 넓어야 한다.
+
+    // 그럼 왜 public이어야만 할까?
+    // 인터페이스의 본질이 "이 객체는 외부에 이런 기능들을 제공한다"라는 공공 규격이기 때문.
+    // 이걸 private로 막아버리면 패키지 외부에서 볼 수가 없으니 구현이 불가능하다.
+    // package-privated의 경우에는 인터페이스의 목적에 대한 직관성을 높이기 위해 막아버렸다.
     public void pay(int amount) {
         System.out.println("카드로 " + amount + "원 결제");
     }
@@ -104,16 +109,18 @@ public class Day10 {
         // 하지만 공통적으로 "결제한다"라는 기능은 꼭 필요하다.
         // 이것들을 상속으로 해결하려고 하면 문제가 커진다.
 
-        // 이것들은 결제의 수단(Method)지 Payment 그 자체가 아니다.
-        // Payment가 Pay Method를 가지고 있는 것이지, Payment가 Pay 자체를 가지고 있는 것이 아니다.
+        // 이것들은 결제의 수단(Method)이지 Payment 그 자체 되야하는 것은 아니다.
+        // Payment가 Pay를 할 수 있어야 하는 것이지, Payment is a Pay는 아닌 것이다.
 
         // 인터페이스 (Interface)
         // 클래스가 반드시 지켜야하는 규칙을 정의하는 것이다.
+        // 이것은 흔히 can do 관계로 나타내며, A can do B의 형태로 사용한다.
         // 인터페이스 또한 부모-자식 타입처럼 다형성을 사용할 수 있다.
         Payment cardPayment = new CardPayment();
         Payment tossPayment = new TossPayment();
         cardPayment.pay(2000);
         tossPayment.pay(3000);
+        // Payment can do TossPayment
         
         Payment[] payments = {
             new CardPayment(),
