@@ -106,8 +106,7 @@ public class Day8 {
         // 학생을 "자식 클래스 / Sub Class"라고 한다.
         // 특히, 이런 관계가 A는 B다라고 설명되어 is-a 관계라고 한다.
         // Dog is a Animal -> O
-        // Student is a Person -> O
-        // Car is a Engine -> X / 상속하기 부적합
+        // Student is a Person -> O// Car is a Engine -> X / 상속하기 부적합
         // Smartphone is a Phone -> O
         // BankAccount is a Bank -> X / 상속하기 부적합
         
