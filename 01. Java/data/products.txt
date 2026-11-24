@@ -1,0 +1,4 @@
+Laptop,Electronics,1500000,5
+Mouse,Electronics,30000,20
+Keyboard,Electronics,80000,10
+Monitor,Electronics,500000,8
