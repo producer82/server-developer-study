@@ -202,10 +202,10 @@ public class Day54 {
 
         // 왜? -> Hashing
         // 데이터의 hashCode()를 이용해 저장할 위치를 결정하는 과정
-        // 1. "Lee" 검색
-        // 2. hashCode() 계산
-        // 3. Hash Bucket 찾기
-        // 4. 데이터 접근
+        // - 1. "Lee" 검색
+        // - 2. hashCode() 계산
+        // - 3. Hash Bucket 찾기
+        // - 4. 데이터 접근
         // 전체 데이터를 검색하지 않고 버킷을 찾아 접근하기 때문에 평균 O(1)이다.
         // 다만, 최악의 경우 여러 데이터가 동일한 버킷에 몰릴 수도 있기 때문에
         // 검색 시간이 늘어날 수도 있다.
@@ -224,10 +224,10 @@ public class Day54 {
         scores.put("Kim", 40);
         System.out.println(scores.get("Lee"));
         // 주요 연산에 따른 시간 복잡도
-        // put(key, value): O(1)
-        // get(key): O(1)
-        // containsKey(): O(1)
-        // remove(key): O(1)
+        // - put(key, value): O(1)
+        // - get(key): O(1)
+        // - containsKey(): O(1)
+        // - remove(key): O(1)
         // 마찬가지로 Hashing을 활용한다.
 
         // equals()와 hashCode()의 중요성
@@ -250,8 +250,8 @@ public class Day54 {
         // 이 규칙을 어기면 중복 판단이나 검색 결과가 깨질 수 있다.
 
         // Queue
-        // 먼저 들어온 데이터가 먼저 나가는(FIFO) 자료구조다
-        // 주문 처리, 작업 처리, 메시지 처리 등에 활용할 수 있다.
+        // - 먼저 들어온 데이터가 먼저 나가는(FIFO) 자료구조다
+        // - 주문 처리, 작업 처리, 메시지 처리 등에 활용할 수 있다.
         Queue<String> queue = new ArrayDeque<>();
         queue.offer("주문1"); // 데이터 넣기
         queue.offer("주문2");
@@ -260,7 +260,7 @@ public class Day54 {
         System.out.println(queue.poll());
 
         // Deque(Double Ended Queue)
-        // 앞과 뒤 양쪽에서 삽입과 삭제가 가능한 자료구조다.
+        // - 앞과 뒤 양쪽에서 삽입과 삭제가 가능한 자료구조다.
         Deque<String> deque = new ArrayDeque<>();
         deque.addFirst("A"); // 데이터 넣기
         deque.addLast("B");
@@ -278,12 +278,12 @@ public class Day54 {
         // LinkedList
         // - Deque 기능 등 특정한 삽입/삭제 패턴이 필요할 때
         // 각 상황에서는 어떤 자료구조를 써야할까?
-        // 상품 전체 목록 조회: ArrayList
-        // 중복된 회원 ID 검사: HashSet
-        // 회원 ID -> 회원 정보: HashMap
-        // 상품 ID -> 상품 객체: HashMap
-        // 순서대로 처리할 대기 작업: Queue
-        // 가장 최근 요청부터 처리할때: Deque, Stack
+        // - 상품 전체 목록 조회: ArrayList
+        // - 중복된 회원 ID 검사: HashSet
+        // - 회원 ID -> 회원 정보: HashMap
+        // - 상품 ID -> 상품 객체: HashMap
+        // - 순서대로 처리할 대기 작업: Queue
+        // - 가장 최근 요청부터 처리할때: Deque, Stack
         
         // ArrayList 학생 관리 프로그램을 작성해보자
         // 잦은 추가와 순회, 인덱스 조회가 필요하므로 ArrayList 사용
