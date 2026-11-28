@@ -9,8 +9,13 @@ class BankAccount {
         balance += amount;
     }
 
-    public synchronized void withdraw(int amount) {
+    public synchronized boolean withdraw(int amount) {
+        if (balance < amount) {
+            System.out.println("잔액이 부족합니다.");
+            return false;
+        }
         balance -= amount;
+        return true;
     }
 
     public synchronized int getBalance() {
@@ -18,7 +23,7 @@ class BankAccount {
     }
 }
 
-class Example {
+class ReentrantExample  {
     public synchronized void methodA() {
         System.out.println("methodA 시작");
         methodB();
@@ -30,16 +35,19 @@ class Example {
     }
 }
 
-class SharedCounter {
+class StaticCounter {
     private static int count = 0;
 
     public static synchronized void increment() {
         count++;
     }
-}
 
+    public static synchronized int getCount() {
+        return count;
+    }
+}
 public class Day58 {
-    public static void main(String[] args) {
+    public static void main(String[] args) throws InterruptedException {
         // 스레드 안전성(Thread Safety)과 동기화 설계
         
         // 스레드 안전성 (Thread Safety)
@@ -62,8 +70,32 @@ public class Day58 {
         BankAccount bankAccount = new BankAccount(100000);
         // 이 클래스에서는 모든 메서드가 synchronized로 선언되어있다.
         // 이 세 메서드는 모두 동일한 BankAccount 객체의 Lock을 사용한다.
-        bankAccount.deposit(50000);
-        bankAccount.withdraw(20000);
+        Runnable deposit = () -> {
+            for (int i = 0; i < 1000; i++) {
+                bankAccount.deposit(1000);
+            }
+        };
+        Runnable withdraw = () -> {
+            int success = 0;
+            for (int i = 0; i < 1000; i++) {
+                boolean result = bankAccount.withdraw(500);
+                if (!result) {
+                    System.out.println("출금 실패");
+                    return;
+                }
+                else {
+                    success++;
+                }
+            }
+            System.out.println("출금 성공 횟수: " + success);
+        };
+        Thread thread1 = new Thread(deposit);
+        Thread thread2 = new Thread(deposit);
+        Thread thread3 = new Thread(withdraw);
+        thread1.start(); thread2.start();
+        thread1.join(); thread2.join(); 
+        thread3.start();
+        thread3.join();
         System.out.println(bankAccount.getBalance());
         // 즉, 이 객체에서는
         // - Thread 1이 deposit()을 실행중이라면
@@ -93,7 +125,7 @@ public class Day58 {
 
         // syncronized의 재진입성(Reentrancy)
         // - 이미 Lock을 확보한 스레드가 같은 Lock을 다시 확보할 수 있다
-        Example example = new Example();
+        ReentrantExample example = new ReentrantExample();
         example.methodA();
         // 내부에서 다른 메서드를 호출해도 왜 멈추지 않을까?
         // - 만약 Lock이 재진입 불가능하다면 현재 스레드가 자신이 가진 Lock을 기다리게 된다
@@ -103,9 +135,20 @@ public class Day58 {
         
         // static synchronized
         // - this가 없는 static 메서드에 synchronized를 붙이면 어떻게 될까?
-        SharedCounter counter = new SharedCounter();
+        StaticCounter counter = new StaticCounter();
+        Runnable count = (() -> {
+            for (int i = 0; i < 100000; i++) {
+                counter.increment();
+            }
+        });
+        thread1 = new Thread(count);
+        thread2 = new Thread(count);
+        thread1.start(); thread2.start();
+        thread1.join(); thread2.join();
+        System.out.println(counter.getCount());
+        
         // static synchronized는 해당 클래스에 대한 Lock을 사용한다
-        // - 코드로 표현하면 synchronized (SharedCounter.class)와 같다.
+        // - 코드로 표현하면 synchronized (StaticCounter.class)와 같다.
         // - ounter 객체를 100개 생성해도 static synchronized 메서드는 모두 동일한 Lock을 사용하게 된다.
         // 즉, 서로 다른 객체를 생성해도 static synchronized 메서드끼리는 동일한 Lock을 사용한다.
 
@@ -126,5 +169,35 @@ public class Day58 {
         // - 필요한 범위만 동기화하고 있는가?
         // - Lock 대상이 명확하며, 같은 자원에 접근하는 코드가 동일한 Lock을
         // 사용하는가?
+
+        // Q1. Thread Safety란 무엇인가? 단순히 synchronized가 붙어 있는 것과 어떤 차이가 있는가?
+        // A1. 여러 스레드가 데이터에 접근해도 의도대로 프로그램이 동작되도록 하는 것.
+        // synchronized는 공유 데이터와 작업의 범위에 맞게 설계해야 클래스 전체를 Thread-Safety하게 만들 수 있다.
+        // Q2. 한 객체에 deposit(), withdraw(), getBalance()가 모두 synchronized로 선언되어 있다면 
+        // 세 메서드는 각각 서로 다른 Lock을 사용하는가?
+        // A2. synchronized()는 this 객체의 Lock을 사용하므로 모두 같은 Lock을 사용하게 된다.
+        // Q3. 각 메서드가 개별적으로 synchronized여도 여러 메서드를 조합한 작업이 안전하지 않을 수 있는 이유는 무엇인가?
+        // A3. 각 메서드가 모두 synchronized여도 한 작업이 원자화 되어있지 않다면 
+        // 다른 메서드에게 Lock을 뺏겨 경쟁 조건이 발생할 수 있다.
+        // Q4. Java의 synchronized가 재진입성을 갖는다는 것은 무엇을 의미하는가?
+        // A4. 한 번 획득한 Lock으로 다른 메서드에 진입할 수 있다.
+        // Q5. 인스턴스 메서드에 synchronized를 붙이는 것과 static 메서드에 붙이는 것은 Lock 대상이 어떻게 다른가?
+        // A5. 인스턴스 메서드는 this 객체의 Lock을 사용하고, static 메서드는 클래스의 Lock을 사용한다.
+        // Q6. 두 코드의 차이는?
+        // public synchronized void increment() {
+        //     count++;
+        // }
+        //
+        // private final Object lock = new Object();
+        // public void increment() {
+        //     synchronized (lock) {
+        //         count++;
+        //     }
+        // }
+        // A6. 첫번째 코드는 this 객체의 Lock을 사용하고, 두번째 코드는 직접 만든 Lock을 사용한다.
+        // Q7. Thread-Safe한 클래스라면 모든 메서드에 무조건 synchronized를 붙이는 것이 좋은가?
+        // A7. 그렇지 않다. synchronized를 무조건 붙이기보다 공유 자원에 접근하는 메서드인지,
+        // 그리고 하나의 논리적인 작업이 원자화가 잘 되어있는지 확인해야한다.
+        // 또한, Lock 대상이 무엇인지도 고려해야한다.
     }
 }
